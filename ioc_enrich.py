@@ -608,6 +608,10 @@ def main(argv=None) -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--list-providers", action="store_true")
     args = ap.parse_args(argv)
+    try:  # Windows defaults to cp1252; provider tags can contain any Unicode
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
     if args.list_providers:
         for p in PROVIDERS:

@@ -139,5 +139,21 @@ class TestTriage(unittest.TestCase):
         self.assertFalse(any("10.20.0.5" in u for u, _ in http.calls))
 
 
+class TestWindowsEncoding(unittest.TestCase):
+    def test_reports_written_as_utf8_under_cp1252_locale(self):
+        import tempfile
+        d = Path(tempfile.mkdtemp())
+        real_write = Path.write_text
+
+        def cp1252_default(self, data, encoding=None, errors=None, newline=None):
+            return real_write(self, data, encoding=encoding or "cp1252", errors=errors)
+
+        with mock.patch.object(Path, "write_text", cp1252_default), \
+             mock.patch.object(ioc_enrich, "HTTP", fake_http([])):
+            pt.main([str(ROOT / "examples/samples/payroll_phish.eml"), "--no-enrich",
+                     "--md", str(d / "r.md"), "--json", str(d / "r.json")])
+        self.assertIn("🟠", (d / "r.md").read_text(encoding="utf-8"))
+
+
 if __name__ == "__main__":
     unittest.main()

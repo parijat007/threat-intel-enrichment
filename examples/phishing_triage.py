@@ -439,6 +439,14 @@ def triage(raw: bytes, enrich: bool = True, workers: int = 8) -> dict:
             "actions": recommended_actions(disp, x)}
 
 
+def _utf8_stdout() -> None:
+    """Windows consoles and redirects default to cp1252, which can't encode the report's emoji."""
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Triage a reported phishing email (.eml).")
     ap.add_argument("eml", help="path to the .eml file")
@@ -446,13 +454,14 @@ def main(argv=None) -> int:
     ap.add_argument("--md", help="write the Markdown report to this path")
     ap.add_argument("--no-enrich", action="store_true", help="parse and score headers only; no lookups")
     args = ap.parse_args(argv)
+    _utf8_stdout()
 
     report = triage(Path(args.eml).read_bytes(), enrich=not args.no_enrich)
     md = render_markdown(report)
     if args.json:
-        Path(args.json).write_text(json.dumps(report, indent=2))
+        Path(args.json).write_text(json.dumps(report, indent=2), encoding="utf-8")
     if args.md:
-        Path(args.md).write_text(md)
+        Path(args.md).write_text(md, encoding="utf-8")
     if not args.md:
         print(md)
     return 2 if report["disposition"]["verdict"] == "MALICIOUS" else 0
