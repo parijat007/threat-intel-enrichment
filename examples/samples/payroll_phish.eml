@@ -1,0 +1,62 @@
+Return-Path: <bounce@mailer-relay.example>
+Received: from mx.corp-mail.example (mx.corp-mail.example [10.20.0.5]) by
+ inbound.corp-mail.example; Thu, 22 Oct 2026 14:02:11 +0000
+Received: from smtp.mailer-relay.example (unknown [185.220.101.1]) by
+ mx.corp-mail.example; Thu, 22 Oct 2026 14:02:09 +0000
+Authentication-Results: mx.corp-mail.example; spf=softfail
+ smtp.mailfrom=mailer-relay.example; dkim=none; dmarc=fail
+ header.from=payroll-portal.example
+From: "HR Payroll (payroll.corp-mail.example)" <notice@payroll-portal.example>
+Reply-To: hr-desk@freemail-inbox.example
+To: employee@corp-mail.example
+Subject: Action required: confirm your Q4 payroll details by 5 PM
+Date: Thu, 22 Oct 2026 14:02:05 +0000
+Message-ID: <20261022140205.4471@payroll-portal.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============5131279815138381999=="
+
+--===============5131279815138381999==
+Content-Type: multipart/alternative;
+ boundary="===============0509946671594411681=="
+
+--===============0509946671594411681==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hello,
+
+Your Q4 payroll profile is incomplete. Confirm your bank details today to avo=
+id a delay:
+hxxps://payroll-verify[.]example/login?id=3D4471
+
+The attached invoice summary lists the pending adjustment.
+
+HR Payroll
+
+--===============0509946671594411681==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body>
+<p>Hello,</p>
+<p>Your Q4 payroll profile is incomplete. Confirm your bank details today to =
+avoid a delay:</p>
+<p><a href=3D"https://payroll-verify.example/login?id=3D4471">https://payroll=
+.corp-mail.example/profile</a></p>
+<p>The attached invoice summary lists the pending adjustment.</p>
+<img src=3D"https://www.w3.org/spacer.gif" width=3D"1" height=3D"1">
+<p>HR Payroll</p></body></html>
+
+--===============0509946671594411681==--
+
+--===============5131279815138381999==
+Content-Type: text/html
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="Invoice_Summary_4471.html"
+MIME-Version: 1.0
+
+PGh0bWw+PGJvZHk+PGgxPlNhbXBsZSBhdHRhY2htZW50PC9oMT48cD5IYXJtbGVzcyB0ZXN0IGZp
+bGUgZm9yIHBoaXNoaW5nLXRyaWFnZSBkZW1vcy48L3A+PC9ib2R5PjwvaHRtbD4=
+
+--===============5131279815138381999==--

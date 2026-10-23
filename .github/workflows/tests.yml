@@ -13,4 +13,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m unittest test_ioc_enrich.py -v
+      - run: python -m unittest discover -p 'test_*.py' -v

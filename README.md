@@ -7,8 +7,8 @@
 This tool enriches indicators (IPs, domains, URLs, file hashes) and CVEs from several free threat-intelligence sources at once. It returns one normalized JSON verdict per indicator. The output is shaped to drop straight into a SOAR playbook, a SIEM enrichment step, or a tool call from a local LLM agent.
 
 ```console
-$ python3 ioc_enrich.py --format summary 185.220.101.1 hxxps://bad[.]example/x CVE-2024-3400
-ipv4 185.220.101.1: MALICIOUS (4 malicious, 0 suspicious, 0 benign of 4 sources answering); tags: tor, scanner, ...
+$ python3 ioc_enrich.py --format summary 8.8.8.8 hxxps://bad[.]example/x CVE-2024-3400
+ipv4 8.8.8.8: BENIGN (0 malicious, 0 suspicious, 3 benign of 4 sources answering); tags: Google Public DNS, riot, ...
 url https://bad.example/x: MALICIOUS (2 malicious, 0 suspicious, 0 benign of 3 sources answering); tags: malware_download, ...
 CVE-2024-3400: IN CISA KEV; CVSS 10.0; EPSS 94.00% (p100) -> P1.
 ```
@@ -50,6 +50,21 @@ flowchart LR
     G --> I[JSON / JSONL / summary]
     H --> I
 ```
+
+## Use case: reported-phishing triage
+
+[`examples/phishing_triage.py`](examples/phishing_triage.py) takes a user-reported `.eml` and produces a ticket-ready triage report:
+
+- **Sender checks:** SPF/DKIM/DMARC results, Reply-To and Return-Path mismatches, display-name spoofing.
+- **Content checks:** deceptive links whose text and target differ, high-risk attachment types.
+- **Enrichment:** sending IPs, domains, URLs and attachment hashes, all through the engine above.
+- **Output:** a disposition, a MITRE ATT&CK mapping (T1566.001/.002, T1036, T1598.003) and recommended containment actions.
+
+```bash
+python3 examples/phishing_triage.py examples/samples/payroll_phish.eml --md ticket.md --json triage.json
+```
+
+See the [sample report](examples/samples/payroll_phish_report.md) and [docs/USE_CASES.md](docs/USE_CASES.md). That page also covers SIEM/SOAR alert enrichment, KEV/EPSS-driven vulnerability prioritization, LLM-agent tool use, and IOC sweeps from threat-intel reports.
 
 ## Quick start
 
@@ -108,8 +123,9 @@ Providers missing a required key are skipped and reported under `sources.skipped
 ## Output
 
 ```jsonc
+// Illustrative shape; values are placeholders.
 {
-  "indicator": "185.220.101.1",
+  "indicator": "<public-ip>",
   "type": "ipv4",
   "verdict": "malicious",        // malicious | suspicious | benign | unknown | undetermined | internal | unparsed
   "confidence": "high",          // based on the number of agreeing sources
@@ -117,14 +133,14 @@ Providers missing a required key are skipped and reported under `sources.skipped
   "suspicious_sources": [],
   "benign_sources": [],
   "tags": ["tor", "scanner"],
-  "summary": "ipv4 185.220.101.1: MALICIOUS (4 malicious, 0 suspicious, 0 benign of 4 sources answering); tags: ...",
+  "summary": "ipv4 <public-ip>: MALICIOUS (4 malicious, 0 suspicious, 0 benign of 4 sources answering); tags: ...",
   "findings": [
     {
       "provider": "otx",
       "status": "ok",            // ok | not_found | skipped | error
       "signal": "malicious",
       "details": { "pulse_count": 40, "malware_families": ["..."], "attack_techniques": ["T1090"] },
-      "reference": "https://otx.alienvault.com/indicator/ipv4/185.220.101.1",
+      "reference": "https://otx.alienvault.com/indicator/ipv4/<public-ip>",
       "latency_ms": 412
     }
   ],
@@ -241,10 +257,15 @@ All HTTP goes through the module-level `HTTP` function, so tests can swap it for
 ## Tests
 
 ```bash
-python3 -m unittest test_ioc_enrich.py -v
+python3 -m unittest discover -p 'test_*.py' -v
 ```
 
-The suite runs fully offline with mocked provider responses. It covers classification, refanging, internal-IP isolation, per-provider parsing, verdict aggregation, the CVE fail-safe path, and the CLI. CI runs it on Python 3.9 and 3.12 for every push and pull request.
+The suite runs fully offline with mocked provider responses.
+
+- **Engine tests** cover classification, refanging, internal-IP isolation, per-provider parsing, verdict aggregation, the CVE fail-safe path and the CLI.
+- **Phishing-triage tests** cover MIME and header extraction, defanged-link handling, the disposition logic, ATT&CK mapping, report defanging, and two guarantees: no attachment upload, and no lookup of internal relays.
+
+CI runs everything on Python 3.9 and 3.12 for every push and pull request.
 
 ## Roadmap
 
